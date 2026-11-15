@@ -1,0 +1,24 @@
+# Terraform state - stored in S3, never in Git
+*.tfstate
+*.tfstate.*
+
+# Provider plugins and local cache
+.terraform/
+
+# Saved plans
+tfplan
+*.tfplan
+
+# Variable files that may hold personal values
+*.tfvars
+*.tfvars.json
+
+# Crash logs
+crash.log
+
+# Editor temporary files (vim)
+*.swp
+*.swo
+
+# Local-only folder
+archieve/
