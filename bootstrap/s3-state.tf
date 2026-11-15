@@ -3,9 +3,9 @@ resource "aws_s3_bucket" "tfstate" {
   bucket = "deepan-tfstate-${data.aws_caller_identity.current.account_id}"
 
   # Safety: Terraform refuses to delete this bucket
-  #  lifecycle {
-  #    prevent_destroy = true
-  #  }
+#  lifecycle {
+#    prevent_destroy = true
+#  }
 }
 
 #Keep every old version of the state file (undo for mistakes)

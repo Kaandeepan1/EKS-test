@@ -4,7 +4,7 @@ data "aws_iam_openid_connect_provider" "github" {
 }
 
 locals {
-  repo = "${var.github_owner}/${var.github_repo}" # exact match, no wildcards
+  repo = "${var.github_owner}/${var.github_repo}"   # exact match, no wildcards
 }
 
 # ---------------- Access to the state bucket (both roles need it) ----------------
