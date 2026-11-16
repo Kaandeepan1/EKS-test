@@ -1,4 +1,4 @@
-name: security
+name: security-deploy
 
 on:
   pull_request:
@@ -38,3 +38,9 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------- Deployment stage (added in step 1.10) ----------------
+  # plan:
+  #   needs: [snyk-iac, gitleaks]
+  # apply:
+  #   needs: [plan]
