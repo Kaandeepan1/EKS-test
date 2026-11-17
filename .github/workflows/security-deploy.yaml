@@ -39,8 +39,76 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ---------------- Deployment stage (added in step 1.10) ----------------
-  # plan:
-  #   needs: [snyk-iac, gitleaks]
-  # apply:
-  #   needs: [plan]
+  # ---------------- Deployment stage ----------------
+
+  plan:
+    name: terraform-plan
+    needs: [snyk-iac, gitleaks]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write          # lets this job request a GitHub OIDC token for AWS
+    defaults:
+      run:
+        working-directory: VPC
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.6
+
+      - name: Log in to AWS (plan role, read-only)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Terraform init (S3 backend)
+        run: terraform init -input=false
+
+      - name: Terraform plan
+        run: terraform plan -input=false -no-color
+
+  # ---------------- Stage 3: apply (main branch only, needs approval) ----------------
+  apply:
+    name: terraform-apply
+    needs: [snyk-iac, gitleaks]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production        # pauses here until you approve
+    concurrency:
+      group: terraform-apply       # never run two applies at the same time
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: VPC
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.6
+
+      - name: Log in to AWS (apply role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_APPLY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Terraform init (S3 backend)
+        run: terraform init -input=false
+
+      - name: Terraform plan (saved)
+        run: terraform plan -input=false -no-color -out=tfplan
+
+      - name: Terraform apply (exactly the saved plan)
+        run: terraform apply -input=false -no-color tfplan
