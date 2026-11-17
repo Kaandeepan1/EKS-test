@@ -1,0 +1,8 @@
+version: v1.25.0
+ignore:
+  SNYK-CC-TF-94:
+    - '*':
+        reason: >-
+          Lab cluster. Public EKS endpoint needed for kubectl from home and future CI.
+          API access still requires IAM authentication. Revisit before any production use.
+        expires: 2026-12-31T00:00:00.000Z
