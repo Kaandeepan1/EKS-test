@@ -21,3 +21,9 @@ variable "private-subnet" {
   type        = list(string)
   default     = ["10.0.2.0/24", "10.0.3.0/24"]
 }
+
+variable "cluster_admin_username" {
+  description = "IAM user who gets admin access to the EKS cluster"
+  type        = string
+  default     = "your-iam-username"
+}
